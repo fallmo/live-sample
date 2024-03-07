@@ -4,7 +4,11 @@ export const Vote = () => {
   const [votes, setVotes] = useState([]);
   const [hasVoted, setVoted] = useState(localStorage.getItem("__voted"));
 
-  const hasMostVotes = votes.reduce((most, vote) => (vote.votes > most ? vote.votes : most), 0);
+  const hasMostVotes = votes.reduce(
+    (most, vote) => (vote.votes > most ? vote.votes : most),
+    0
+  );
+
   useEffect(() => {
     updateVotes();
   }, []);
@@ -14,6 +18,7 @@ export const Vote = () => {
       .then((res) => res.json())
       .then((data) => {
         setVotes(data.data);
+        setTimeout(() => updateVotes(), 10 * 1000);
       })
       .catch((err) => console.log(err));
   }
@@ -34,11 +39,13 @@ export const Vote = () => {
 
   function getPercent(num) {
     const totalVotes = votes.reduce((acc, vote) => acc + vote.votes, 0);
-    return ((num / totalVotes) * 100).toFixed(0);
+    return ((num / totalVotes) * 100 || 0).toFixed(0);
   }
   return (
     <div className="p-[20px] rounded-lg bg-white shadow-sm">
-      <h1 className="text-3xl text-center mb-[10px]">Which Country has the Nicest Flag?</h1>
+      <h1 className="text-3xl text-center mb-[10px]">
+        Which Country has the Nicest Flag?
+      </h1>
       <div className="flex flex-col gap-[20px] lg:flex-row">
         {votes.map((vote, index) => (
           <Option
@@ -47,7 +54,7 @@ export const Vote = () => {
             votes={vote.votes}
             percentage={getPercent(vote.votes)}
             onVote={handleVote}
-            isWinning={vote.votes === hasMostVotes}
+            isWinning={vote.votes === hasMostVotes && hasMostVotes !== 0}
             hasVoted={hasVoted}
           />
         ))}
@@ -70,7 +77,7 @@ function Option({ isWinning, name, votes, percentage, onVote, hasVoted }) {
       </h2>
 
       <button
-        className={`bg-blue-500 text-white p-[10px] shadow-lg hover:bg-blue-700 ${
+        className={`bg-blue-500 text-white p-[10px] rounded-md text- shadow-lg hover:bg-blue-700 ${
           hasVoted ? "shadow-none pointer-events-none opacity-50" : ""
         }`}
         disabled={!!hasVoted}

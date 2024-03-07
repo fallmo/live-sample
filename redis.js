@@ -1,6 +1,11 @@
 const redis = require("redis");
 
-const redisClient = redis.createClient({ host: process.env.REDIS_HOST });
+const host = process.env.REDIS_HOST;
+if (!host) {
+  console.error(`REDIS_HOST variable not provided`);
+  process.exit(1);
+}
+const redisClient = redis.createClient({ host: host });
 
 redisClient.on("connect", () => {
   console.log("Redis connection established...");
@@ -33,10 +38,15 @@ const clearCached = (key) =>
 
 const setCacheExp = (key, milliseconds, value) =>
   new Promise((resolve, reject) => {
-    redisClient.psetex(key, milliseconds, JSON.stringify(value), (error, reply) => {
-      if (error) reject(error);
-      resolve(reply);
-    });
+    redisClient.psetex(
+      key,
+      milliseconds,
+      JSON.stringify(value),
+      (error, reply) => {
+        if (error) reject(error);
+        resolve(reply);
+      }
+    );
   });
 
 const addKeyTime = (key, milliseconds) =>
@@ -63,4 +73,13 @@ const checkKeyExists = (key) =>
     });
   });
 
-module.exports = { redisClient, setCache, getCached, clearCached, setCacheExp, addKeyTime, getCacheKeys, checkKeyExists };
+module.exports = {
+  redisClient,
+  setCache,
+  getCached,
+  clearCached,
+  setCacheExp,
+  addKeyTime,
+  getCacheKeys,
+  checkKeyExists,
+};
