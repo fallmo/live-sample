@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const Vote = () => {
   const [votes, setVotes] = useState([]);
   const [hasVoted, setVoted] = useState(localStorage.getItem("__voted"));
+  const timeoutRef = useRef();
 
   const hasMostVotes = votes.reduce(
     (most, vote) => (vote.votes > most ? vote.votes : most),
@@ -18,12 +19,14 @@ export const Vote = () => {
       .then((res) => res.json())
       .then((data) => {
         setVotes(data.data);
-        setTimeout(() => updateVotes(), 10 * 1000);
+        timeoutRef.current = setTimeout(updateVotes, 10 * 1000);
       })
       .catch((err) => console.log(err));
   }
 
   function handleVote(country) {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(updateVotes, 10 * 1000);
     setVotes(
       votes.map((vote) => {
         if (vote.name === country) {
@@ -42,7 +45,7 @@ export const Vote = () => {
     return ((num / totalVotes) * 100 || 0).toFixed(0);
   }
   return (
-    <div className="p-[20px] rounded-lg bg-white shadow-sm">
+    <div className="p-[20px] bg-white/95 shadow-sm">
       <h1 className="text-3xl text-center mb-[10px]">
         Which Country has the Nicest Flag?
       </h1>
@@ -73,20 +76,21 @@ function Option({ isWinning, name, votes, percentage, onVote, hasVoted }) {
       <img src={getFlag(name)} />
       <h1 className="text-3xl">{name}</h1>
       <h2 className="mb-[10px]">
-        {votes} Votes ({percentage}%)
+        <b>{votes} </b>
+        Votes ({percentage}%)
       </h2>
-
-      <button
-        className={`bg-blue-500 text-white p-[10px] rounded-md text- shadow-lg hover:bg-blue-700 ${
-          hasVoted ? "shadow-none pointer-events-none opacity-50" : ""
-        }`}
-        disabled={!!hasVoted}
-        onClick={() => {
-          onVote(name);
-        }}
-      >
-        {hasVoted ? "Thanks for voting" : `Vote for ${name}`}
-      </button>
+      {!hasVoted ? (
+        <button
+          className={`bg-orange-500 text-white p-[10px] rounded-md text-base shadow-lg hover:bg-orange-700`}
+          onClick={() => {
+            onVote(name);
+          }}
+        >
+          `Vote for ${name}
+        </button>
+      ) : (
+        <p className="text-base">Thanks for voting</p>
+      )}
     </div>
   );
 }

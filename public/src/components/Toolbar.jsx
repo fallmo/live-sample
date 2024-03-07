@@ -25,7 +25,7 @@ export const Toolbar = () => {
   }
 
   return (
-    <div className="p-[10px] gap-[10px] flex flex-wrap justify-between items-center rounded-lg bg-white shadow-sm">
+    <div className="p-[10px] gap-[10px] flex flex-col lg:flex-row justify-between items-center  bg-white/90 shadow-sm">
       <div className="text-lg flex-1 text-center md:text-left">
         Instance ID: {instanceId}
       </div>
