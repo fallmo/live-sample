@@ -5,7 +5,17 @@ if (!host) {
   console.error(`REDIS_HOST variable not provided`);
   process.exit(1);
 }
-const redisClient = redis.createClient({ host: host });
+const redisClient = (() => {
+  if (process.env.REDIS_USERNAME) {
+    return redis.createClient({
+      url: `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:6379`,
+    });
+  } else {
+    return redis.createClient({
+      host: host,
+    });
+  }
+})();
 
 redisClient.on("connect", () => {
   console.log("Redis connection established...");
