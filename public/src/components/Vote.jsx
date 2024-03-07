@@ -1,17 +1,49 @@
 import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+
+// "undefined" means the URL will be computed from the `window.location` object
+// const URL =
+//   process.env.NODE_ENV === "production" ? undefined : "http://localhost:8080";
+const socket = io(undefined);
 
 export const Vote = () => {
   const [votes, setVotes] = useState([]);
   const [hasVoted, setVoted] = useState(localStorage.getItem("__voted"));
-  const timeoutRef = useRef();
 
   const hasMostVotes = votes.reduce(
     (most, vote) => (vote.votes > most ? vote.votes : most),
     0
   );
+  function onVote(value) {
+    console.log(value);
+    setVotes((votes) =>
+      votes.map((vote) => {
+        if (vote.name === value) vote.votes += 1;
+        return vote;
+      })
+    );
+  }
 
   useEffect(() => {
     updateVotes();
+
+    function onConnect() {
+      console.log("socket connected");
+    }
+
+    function onDisconnect() {
+      console.log("socket disconnected");
+    }
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("vote", onVote);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("foo", onVote);
+    };
   }, []);
 
   function updateVotes() {
@@ -19,22 +51,19 @@ export const Vote = () => {
       .then((res) => res.json())
       .then((data) => {
         setVotes(data.data);
-        timeoutRef.current = setTimeout(updateVotes, 10 * 1000);
       })
       .catch((err) => console.log(err));
   }
 
   function handleVote(country) {
-    clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(updateVotes, 10 * 1000);
-    setVotes(
-      votes.map((vote) => {
-        if (vote.name === country) {
-          vote.votes += 1;
-        }
-        return vote;
-      })
-    );
+    // setVotes(
+    //   votes.map((vote) => {
+    //     if (vote.name === country) {
+    //       vote.votes += 1;
+    //     }
+    //     return vote;
+    //   })
+    // );
     setVoted(true);
     localStorage.setItem("__voted", true);
     fetch(`/vote/${country}`);
@@ -86,7 +115,7 @@ function Option({ isWinning, name, votes, percentage, onVote, hasVoted }) {
             onVote(name);
           }}
         >
-          `Vote for ${name}
+          Vote for {name}
         </button>
       ) : (
         <p className="text-base">Thanks for voting</p>

@@ -1,6 +1,8 @@
 const express = require("express");
 const path = require("path");
 const { getCached, setCache } = require("./redis");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
 
@@ -37,9 +39,27 @@ app.get("/vote/:country", async (req, res) => {
   const country = req.params.country;
   const votes = (await getCached(country)) || 0;
   await setCache(country, votes + 1);
+  io.emit("vote", country);
   res.json({ data: "Voted!" });
 });
 
 const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, () => console.log(`Application running on 0.0.0.0:${PORT}`));
+const httpServer = createServer(app);
+
+httpServer.listen(PORT, () =>
+  console.log(`Application running on 0.0.0.0:${PORT}`)
+);
+
+const io = new Server(httpServer, {
+  // options
+});
+
+io.on("connection", (socket) => {
+  console.log("connected");
+  // ...
+});
+
+io.on("disconnect", () => {
+  console.log("disconnected");
+});
