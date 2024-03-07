@@ -76,7 +76,7 @@ export const Vote = () => {
   return (
     <div className="p-[20px] bg-white/95 shadow-sm">
       <h1 className="text-3xl text-center mb-[10px]">
-        Which Country has the Nicest Flag?
+        Quel est le plus beau drapeau ?
       </h1>
       <div className="flex flex-col gap-[20px] lg:flex-row">
         {votes.map((vote, index) => (

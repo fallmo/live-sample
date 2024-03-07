@@ -21,7 +21,7 @@ export const Toolbar = () => {
       .then((res) => res.json())
       .then((data) => {})
       .catch((err) => console.log(err));
-    window.alert("Server has crash");
+    window.alert("Le serveur est tombé.");
   }
 
   return (
@@ -37,7 +37,7 @@ export const Toolbar = () => {
           className="bg-red-500 w-max text-white p-[10px] shadow-lg rounded-md hover:bg-red-700"
           onClick={simulateCrash}
         >
-          Simulate Crash Server
+          Simuler un crash serveur
         </button>
       </div>
     </div>
